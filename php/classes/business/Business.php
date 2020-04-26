@@ -174,6 +174,8 @@ class business implements JsonSerializable {
 						WHERE businessId = :businessId";
 	}
 }
+}
+
 
 $statement = $pdo->prepare($query);
 
