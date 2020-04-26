@@ -85,7 +85,7 @@ class business implements JsonSerializable {
 	}
 
 
-	public function getBusinessName(): float {
+	public function getBusinessName(): string {
 		$this->businessName;
 	}
 
