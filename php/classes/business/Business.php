@@ -62,7 +62,7 @@ class business implements JsonSerializable {
 	public function setBusinessLng($newBusinessLng): void {
 		try {
 			$newBusinessLng = filter_var($newBusinessLng, FILTER_VALIDATE_FLOAT);
-		} catch (\TypeError $exception) {
+		} catch(\TypeError $exception) {
 			throw(new \TypeError("Business longitude value is an invalid data type"));
 		}
 
@@ -77,13 +77,12 @@ class business implements JsonSerializable {
 	public function setBusinessLat($newBusinessLat): float {
 		try {
 			$newBusinessLat = filter_var($newBusinessLat, FILTER_VALIDATE_FLOAT);
-		} catch (\TypeError $exception) {
+		} catch(\TypeError $exception) {
 			throw(new \TypeError("Business latitude value is an invalid data type"));
 		}
 
 		$this->businessLat = $newBusinessLat;
 	}
-
 
 
 	public function getBusinessName(): float {
@@ -109,7 +108,7 @@ class business implements JsonSerializable {
 		$this->businessUrl;
 	}
 
-	public function setBusinessUrl( string $newBusinessUrl) {
+	public function setBusinessUrl(string $newBusinessUrl) {
 
 		try {
 			$newBusinessUrl = filter_var($newBusinessUrl, FILTER_VALIDATE_URL);
@@ -172,62 +171,59 @@ class business implements JsonSerializable {
 						businessYelpId = :businessYelpId,
 						
 						WHERE businessId = :businessId";
-	}
-}
-}
 
+		$statement = $pdo->prepare($query);
 
-$statement = $pdo->prepare($query);
+		$parameter = ["businessId" => $this->businessId->getBytes(),
+			"businessLng" => $this->businessLng,
+			"businessLat" => $this->businessLat,
+			"businessName" => $this->businessName,
+			"businessUrl" => $this->businessUrl,
+			"businessYelpId" => $this->businessYelpId];
 
-$parameter = ["businessId" => $this->businessId->getBytes(),
-	"businessLng" => $this->businessLng,
-	"businessLat" => $this->businessLat,
-	"businessName" => $this->businessName,
-	"businessUrl" => $this->businessUrl,
-	"businessYelpId" => $this->businessYelpId];
-
-}
-
-$statement->execute($parameter);
-
-public function getBusinessbyBusinessId(PDO $pdo, $businessId): SplFixedArray {
-
-	try {
-		$businessId = self::validateUuid($businessId);
-	} catch(InvalidArgumentException | RangeException | Exception | TypeError $exception) {
-		throw(new PDOException($exception->getMessage(), 0, $exception));
+		$statement->execute($parameter);
 	}
 
-	$query = "SELECT businessId, businessLng, businessLat, businessName, businessUrl, businessYelpId FROM business WHERE businessId = :businessId";
-	$statement = $pdo->prepare($query);
 
-	$parameters = ["businessId" => $businessId->getBytes()];
-	$statement->execute($parameters);
+	public function getBusinessbyBusinessId(PDO $pdo, $businessId): SplFixedArray {
 
-	$businessId = new SplFixedArray($statement->rowCount());
-	$statement->setFetchMode(PDO::FETCH_ASSOC);
-	while(($row = $statement->fetch()) !== false) {
 		try {
-			$businessId = new Business($row["businessId"], $row["businessLng"], $row["businessLat"], $row["businessName"], $row["businessUrl"], $row["businessYelpId"]);
-			$businessId[$businessId->key()] = $businessId;
-			$businessId->next();
-		} catch(Exception $exception) {
-			// if the row couldn't be converted, rethrow it
+			$businessId = self::validateUuid($businessId);
+		} catch(InvalidArgumentException | RangeException | Exception | TypeError $exception) {
 			throw(new PDOException($exception->getMessage(), 0, $exception));
 		}
+
+		$query = "SELECT businessId, businessLng, businessLat, businessName, businessUrl, businessYelpId FROM business WHERE businessId = :businessId";
+		$statement = $pdo->prepare($query);
+
+		$parameters = ["businessId" => $businessId->getBytes()];
+		$statement->execute($parameters);
+
+		$businessId = new SplFixedArray($statement->rowCount());
+		$statement->setFetchMode(PDO::FETCH_ASSOC);
+		while(($row = $statement->fetch()) !== false) {
+			try {
+				$businessId = new Business($row["businessId"], $row["businessLng"], $row["businessLat"], $row["businessName"], $row["businessUrl"], $row["businessYelpId"]);
+				$businessId[$businessId->key()] = $businessId;
+				$businessId->next();
+			} catch(Exception $exception) {
+				// if the row couldn't be converted, rethrow it
+				throw(new PDOException($exception->getMessage(), 0, $exception));
+			}
+		}
+		return ($businessId);
 	}
-	return ($businessId);
-}
 
-public function jsonSerialize(): array {
-	$fields = get_object_vars($this);
+	public function jsonSerialize(): array {
+		$fields = get_object_vars($this);
 
-	$fields["businessId"] = $this->businessId->toString();
-	$fields["businessLng"] = round(floatval($this->businessLng->format("")) * 1000);
-	$fields["businessLat"] = round(floatval($this->businessLat->format("")) * 1000);
-	$fields["businessName"] = $this->businessName->toString();
-	$fields["businessUrl"] = $this->businessUrl->toString();
-	$fields["businessYelpId"] = round(floatval($this->businessYelpId->format("")) * 1000);
-	return ($fields);
+		$fields["businessId"] = $this->businessId->toString();
+		$fields["businessLng"] = round(floatval($this->businessLng->format("")) * 1000);
+		$fields["businessLat"] = round(floatval($this->businessLat->format("")) * 1000);
+		$fields["businessName"] = $this->businessName->toString();
+		$fields["businessUrl"] = $this->businessUrl->toString();
+		$fields["businessYelpId"] = round(floatval($this->businessYelpId->format("")) * 1000);
+		return ($fields);
+	}
 }
 
