@@ -40,7 +40,7 @@ class business implements JsonSerializable {
 		}
 	}
 
-	public function getBusinessId($businessId) {
+	public function getBusinessId($businessId): Uuid {
 		$this->businessId = $businessId;
 	}
 
@@ -52,35 +52,89 @@ class business implements JsonSerializable {
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
 		}
 
-		$this->BusinessId = $uuid;
+		$this->businessId = $uuid;
 	}
 
-	public function getBusinessLng() {
+	public function getBusinessLng(): float {
 		$this->businessLng;
 	}
 
 	public function setBusinessLng($newBusinessLng): void {
+		try {
+			$newBusinessLng = filter_var($newBusinessLng, FILTER_VALIDATE_FLOAT);
+		} catch (\TypeError $exception) {
+			throw(new \TypeError("Business longitude value is an invalid data type"));
+		}
 
+		$this->businessLng = $newBusinessLng;
 	}
 
-	function getBusinessLat() {
+
+	function getBusinessLat(): float {
 		$this->businessLat;
 	}
 
-	public function getBusinessName() {
+	public function setBusinessLat($newBusinessLat): float {
+		try {
+			$newBusinessLat = filter_var($newBusinessLat, FILTER_VALIDATE_FLOAT);
+		} catch (\TypeError $exception) {
+			throw(new \TypeError("Business latitude value is an invalid data type"));
+		}
+
+		$this->businessLat = $newBusinessLat;
+	}
+
+
+
+	public function getBusinessName(): float {
 		$this->businessName;
 	}
 
+	public function setBusinessName(string $newBusinessName) {
 
-	public function getBusinessUrl() {
+		$newBusinessName = filter_var($newBusinessName, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($newBusinessName) === true) {
+			throw(new \InvalidArgumentException("Business name is empty or insecure"));
+		}
+
+		if(strlen($newBusinessName) > 128) {
+			throw(new \RangeException("Business name is longer than 128 characters"));
+		}
+
+		$this->businessName = $newBusinessName;
+	}
+
+
+	public function getBusinessUrl(): string {
 		$this->businessUrl;
 	}
 
-	public function getBusinessYelpId() {
+	public function setBusinessUrl( string $newBusinessUrl) {
+
+		try {
+			$newBusinessUrl = filter_var($newBusinessUrl, FILTER_VALIDATE_URL);
+		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
+			$exceptionType = get_class($exception);
+			throw(new $exceptionType($exception->getMessage(), 0, $exception));
+		}
+		if(strlen($newBusinessUrl) > 255) {
+			throw(new \RangeException("Yelp url is longer than 255 characters"));
+		}
+
+		$this->businessUrl = $newBusinessUrl;
+	}
+
+	public function getBusinessYelpId(): string {
 		$this->businessYelpId;
 	}
 
+	public function setBusinessYelpId(string $newBusinessYelpId) {
 
+		if(strlen($newBusinessYelpId) > 32) {
+			throw(new \RangeException("Yelp Id is longer than 32 characters."));
+		}
+		$this->businessYelpId = $newBusinessYelpId;
+	}
 
 	public function insert(PDO $pdo): void {
 
@@ -175,5 +229,3 @@ public function jsonSerialize(): array {
 	return ($fields);
 }
 
-
-}
